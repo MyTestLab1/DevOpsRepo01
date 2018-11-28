@@ -1,1 +1,14 @@
+### Jenkins installationi centos 7.5 ###
 
+1	add epel repository.
+2 	yum install java-2.8.0-openjdk
+3	wget -o /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-statble/jenkins.repo
+4	yum repolist
+5	rpm --import https://pkg.jenkins.io/redhat-statble/jenkins.io.key
+6	yum install jenkins -y
+7	systemctl status jenkins
+8	systemctl start jenkins
+
+
+
+===============================================================================================================
