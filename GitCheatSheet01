@@ -88,3 +88,11 @@ https://github.com/username/(repo_name).git	Create a remote repo pointing on you
 14	git pull –rebase	Fetches the remote copy of the current branch and rebases it into the local copy.
 15	git push –all	Push all the local branches to the specified remote repository.
 ============================================================================================================================
+
+#### Misellaneous ####
+
+#       Git Command     		Description
+1	git rebase -i --root	this will remove all before commits and merge into a single commie.
+2	
+============================================================================================================================
+
