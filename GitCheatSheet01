@@ -39,6 +39,10 @@ https://github.com/username/(repo_name).git	Create a remote repo pointing on you
 10	git diff	Shows unstaged changes in the index and the working directory.
 11	git diff –staged	Shows file differences between staging and the last file version.
 12	git diff (file_name)	Shows changes in a single file compared to the last Commit.
+13	git log master –-oneline	it will list all commits from local master branch
+14	git log remotes/origin/master –oneline	it will list all commits from remote master
+15	git diff master remotes/origin/master		it will display differences between local master and remote master branch
+
 ============================================================================================================================
 
 #### Declare Commits ####
