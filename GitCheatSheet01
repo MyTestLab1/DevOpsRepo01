@@ -93,6 +93,6 @@ https://github.com/username/(repo_name).git	Create a remote repo pointing on you
 
 #       Git Command     		Description
 1	git rebase -i --root	this will remove all before commits and merge into a single commie.
-2	
+2	git merge --no-commit master Merge branch master into the current branch, but do not make a new commit automatically
 ============================================================================================================================
 
