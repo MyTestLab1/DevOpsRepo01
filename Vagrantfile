@@ -17,6 +17,7 @@ config.vm.define "master" do |master|
      sudo yum install git -y
      sudo yum install epel-release -y
      sudo yum install java-1.8.0-openjdk -y
+     sudo yum install wget -y
      sudo wget -O /etc/yum.repos.d/jekins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
      sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
      sudo yum install jenkins -y
