@@ -1,0 +1,68 @@
+Time: 3:00:00
+
+==========================================
+Item Name: DevCodeComile
+SCM: git repo link 
+	https://github.com/edureka-git/DevOpsClassCodes.git
+Build: Maven version: mymaven
+       Goal		compile
+==========================================
+Item Name: DevCodeReview
+SCM: git repo link
+	https://github.com/edureka-git/DevOpsClassCodes.git
+Build: Maven version: mymaven
+       Goal		-P metrics pmd.pmd
+
+==========================================
+Genrating human readable report from xml file to PMD
+
+post build Actions >>> 
+PMD results target/pmd.xml    
+manage plugins: seach and install PMD plugin
+==========================================
+Item Name: QAUintTest
+SCM : git link 
+	https://github.com/edureka-git/DevOpsClassCodes.git
+
+Build: Invoke top level Maven
+	Maven version: mymaven
+	Goal		test
+==========================================
+Genrating human readable report from xml file to PMD
+
+post build Actions >>> 
+Test report XMLs target/surefire-reports/*.xml
+manage plugins: seach and install PMD plugin
+
+==========================================
+Item Name: QaMetricCheck
+SCM : git link 
+	https://github.com/edureka-git/DevOpsClassCodes.git
+
+Build: Invoke top level Maven target
+	Maven version: mymaven
+	Goal		cobertura.cobertura-Dcobetura.repot.format=xml
+
+install the plugins.... cobetura
+Genrating human readable report from xml file to PMD
+
+post build Actions >>> 
+Test report XMLs target/..........
+manage plugins: seach and install PMD plugin
+
+==========================================
+Item Name: 
+SCM : git link 
+	https://github.com/edureka-git/DevOpsClassCodes.git
+
+Build: Invoke top level Maven
+	Maven version: mymaven
+	Goal		
+
+
+==========================================
+
+
+
+
+==========================================
