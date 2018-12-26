@@ -26,7 +26,7 @@ Example:-
 #docker container exec -it WEB3 /bin/bash -----> To take console
 #docker container run --detach -p 8080:80 -p 2020:22 --name WEB2 httpserer ----> Expose Multipal port
 #docker container run --detach -P --name WEB4 httpserer ------> To publish all the ports you define in your Dockerfile with EXPOSE and bind
-#docker commit 21f4006ea8b4 httpsshimg ------>Create a new image from a running/stop container’s changes.
+#docker commit 21f4006ea8b4 httpsshimg ------>Create a new image from a running/stop containerâ€™s changes.
 
 
 ################################################################  To Build container image #########################################################
@@ -72,7 +72,35 @@ or
 #docker image push stableserver:v1 ------> To push image to docker hub
 #docker image pull stableserver:v1 ------> To pull image from docker hub
 
+#################################################################################################################################################################
 
+################################################################  Docker Persistent/Volume   #########################################################
+
+#docker volume ls  -----> Check list of volumes
+#docker volume create data1  ----> Create Volume (default location of volumes "/var/lib/docker/volumes/")
+#docker container run -d -P --name server1 -v data1:/mnt stableserver ----> Attach volume.
+#docker container run -d -P --name server4 -v /datatest:/var/www/html stableserver ------> Bind host foleder to container
+#docker container run -d --name mysql1 -e MYSQL_ALLOW_EMPTY_PASSWORD=True -v mysql-db:/var/lib/mysql mysql
+
+#########################################################################################################################################################
+
+################################################################  Docker Compose   #########################################################
+
+################################################################  Docker Swarm   #########################################################
+
+#docker info |grep swarm -----> TO check Swarm status
+#docker swarm inti -----> to initialise the swarm
+#docker swarm init --advertise-addr 10.114.243.29 ----->Define IP (if system has multipal IPs)
+#docker node ls ------> To check cluster node status 
+#docker swarm join --token SWMTKN-1-5vk854s0bb3ewfc92o6o1cm8t0q9dqkh3z072twjb2bdq2gugd-ewokaowz6e5k5j3l5cjdbyclz 10.114.243.29:2377 ------> Join Swarm as worker node
+#docker service create --replicas 2 --name myService docker.io/chetan2410/stableserver -----> Create service with 2 replicas (it will not publish any exposed port in the image)
+#docker service ls ------>  List of swarm service
+#docker service inspect 6119fe0746af  -----> inspect the swarm service to get full info 
+#docker service rm yv0wgf4lyosx -------> Delete swarm service
+#docker service create --replicas 2 -p 80 -p 22 --name myService docker.io/chetan2410/stableserver -----> Create service with 2 replicas (it will publish any exposed port in the image to random port)
+#docker service create --replicas 2 -p 7070:80 -p 8080:22 --name myService2 docker.io/chetan2410/stableserver ----> Create service with 2 replicas (it will publish any exposed port in the image to define port)
+
+##################################################################################################################################################################################################################
 ######################  To Set Proxy to download images from docker hub  ###############################################################################
 First, create a systemd drop-in directory for the Docker service:
 mkdir /etc/systemd/system/docker.service.d
