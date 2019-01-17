@@ -1,0 +1,232 @@
+
+ - How do I configure a stonith device using agent fence_vmware_soap in a RHEL 6 or 7 High Availability cluster with pacemaker? -- https://access.redhat.com/solutions/917813
+  LSB-compliant script be used as a resource in RHEL 6 and RHEL 7 pacemaker clusters? -- https://access.redhat.com/solutions/753443
+ 1) For a conceptual understanding:
+ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/high_availability_add-on_overview/index   <==== "High Availability Add-On Overview"
+ 
+ 2) For a general administration example for commonly used cluster resources. This link has examples to create a NFS cluster as well as HTTP cluster environment. You can take additional help if you happen to configure these types of cluster:
+ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/high_availability_add-on_administration/index   <=== "High Availability Add-On Administration"
+ 
+ 3) For reference to the different components involved:
+ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/high_availability_add-on_reference/index  <==== "High Availability Add-On Reference"
+ 
+ 4) If you want to configure active/active GFS2 filesystem:
+ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/global_file_system_2/index <==== "Global File System 2"
+ 
+ 5)  If you want to configure active/passive HA-LVM filesystem:
+ https://access.redhat.com/solutions/3067 <<<== What is a Highly Available LVM (HA-LVM) configuration
+ 
+* corosync --> Handle communication between cluster nodes
+* Pacemaker --> 
+     CIB : Cluster Information Base
+     CRMD : Cluster Resource Managment Deamon
+     PEngine : Policy Engine (Brain of Cluster )
+     STONITHd : Fencing 
+* PCS/pcsd : Deamon
+
+* RPM : pacmaker corosync pcs fence-agents-all
+
+#yum install pcs fence-agents-all -y
+
+#firewall-cmd --add-service=high-availability
+#firewall-cmd --reload
+
+#systemctl enable pcsd
+#systemctl start pcsd
+
+#echo redhat |passwd --stdin hacluster
+
+#pcs cluster auth vm1.example.com vm2.example.com
+
+#pcs cluster setup --name MyCluster vm1.example.com vm2.example.com
+
+#pcs cluster enable --all
+#pcs cluster start --all
+
+#pcs cluster status
+#crm_mon -r
+#pcs status
+#pcs cluster stop ---> To stop service on all node
+#pcs cluster start node1.private
+#pcs cluster auth node4.private ---> To authorize the new node for existing cluster
+#pcs cluster add node4.private ---> To add the new node into existing cluster
+#pcs property set stonith-enabled=false
+
+#pcs cluster remove node4.private ---> To remove the node from cluster
+
+#pcs cluster standby node3.provate --> To put node into maintance mode
+#pcs cluster unstandby node3.provate --> To remove node from maintance mode
+
+#pcs cluster standby --all --> To put all node into maintance mode
+#pcs cluster unstandby --all --> To remove all node from maintance mode
+
+Quorum
+=======
+
+Every node has vote
+
+#corosync-quorumtool
+	@ Expected Votes
+	@ Total
+	@ Quorum
+	@ Flags
+	   wait_for_all  ----> Can be use with below both the flags.
+	   last_man_standing  -----> In this case quorum will be desolve when only last node is avaible 
+	   auto_tie_brekar  -----> Cluster will be running if 50% vote is avaible. 
+	   
+
+#corosync-quorumtool 
+
+#pcs cluster stop ---> To stop service on all node
+
+*last_man_standing
+=================
+
+#vim /etc/corosync/corosync.conf
+
+quorum {
+	provider: corosync_votequorum
+last_man_standing: 1
+}
+Save & Exit
+
+*auto_tie_brekar
+===================
+#vim /etc/corosync/corosync.conf
+
+quorum {
+	provider: corosync_votequorum
+auto_tie_brekar: 1
+auto_tie_brekar_node: lowest
+}
+Save & Exit
+
+*Wait_for_all
+=============
+#vim /etc/corosync/corosync.conf
+
+quorum {
+	provider: corosync_votequorum
+auto_tie_brekar: 1
+auto_tie_brekar_node: lowest
+wait_for_all: 1
+}
+
+#pcs cluster sync  --> To sync update cluster config to all node
+#pcs cluster start --all ---> To start service on all node
+
+
+Setting up two node Cluster
+===============================
+
+#vim /etc/corosync/corosync.conf
+
+quorum {
+	provider: corosync_votequorum
+two_node: 1
+wait_for_all: 0
+}
+
+#pcs cluster sync  --> To sync update cluster config to all node
+#pcs cluster start --all ---> To start service on all node
+
+
+Fencing
+=========
+
+#pcs stonith list ----> To list of facing module.
+
+#pcs stonith describe fence_xvm ----> To check of use.
+
+Create fence resource
+---------------------------
+#fence_vmware_soap -z --ssl-insecure -l 'administrator@vsphere.local' -p 'Qwer!234' -a 192.168.19.199 -o list -----> To get vm list 
+
+Exam:
+------
+#pcs stonith create vmfence1 fence_vmware_soap pcmk_host_map="vm1.example.com:vm1;vm2.example.com:vm2" ipaddr=192.168.19.199 ssl_insecure=1 login='administrator@vsphere.local' passwd='Qwer!234' delay=10
+
+Exam:
+-----
+#pcs stonith create myPDU fence_apc ipaddr=10.10.10.72 login=admin passwd='Wxtx4ZAYUH8q3^qR*9'  pcmk_host_map="node1.example.com:node1;node2.example.com:node2"
+
+Test the fencing
+--------------------
+From vm1:-
+
+#pcs stonith fence vm1
+
+
+Add constraint
+----------------
+#pcs constraint location vmfence1 prefers vm2.example.com
+#pcs constraint location vmfence2 prefers vm1.example.com
+#pcs constraint list --full  ----> show details
+
+Remove constraint
+------------------
+#pcs constraint remove <Resource Id>
+Exm.
+-----
+#pcs constraint remove cli-ban-vmfence2-on-vm1.example.com
+#pcs constraint remove cli-ban-vmfence1-on-vm2.example.com
+
+Set/Unset Property
+---------------------
+#pcs property
+#pcs property unset have-watchdog
+
+Cleanup/Reset resource
+---------------------------
+#pcs resource cleanup <Resource Name>
+
+Exa.
+-----
+#pcs resource cleanup vmfencenode1
+#pcs resource cleanup vmfencenode2
+
+
+Move Resource
+------------------
+#pcs resource move <Resouce Name> <Node Name>
+
+Exa.
+----
+#pcs resource move WebIP vm1.example.com
+
+
+
+web UI: <IP>:2224
+hacluster
+redhat
+
+192.168.19.201 vm1
+192.168.19.202 vm2
+
+Storage IP : 10.10.100.200
+	     192.168.19.200
+
+
+10.19.32.58----Cluster IP.
+
+
+Create PCS Cluster with vmware fencing for HTTP service.
+=============================================================
+yum install pcs fence-agents-all -y
+systemctl enable pcsd
+systemctl start pcsd
+echo redhat |passwd --stdin hacluster
+pcs cluster auth vm1.example.com vm2.example.com ----> 
+pcs cluster setup --name MyCluster vm1.example.com vm2.example.com ------> To create two node cluster 
+pcs cluster enable --all ----> enable clusre service on all node
+pcs cluster start --all -----> start cluster on all node
+pcs cluster status -----> To check cluster status 
+crm_mon -r -----> To monitore cluster status 
+pcs stonith create vmfence1 fence_vmware_soap pcmk_host_map="vm1.example.com:vm1;vm2.example.com:vm2" ipaddr=192.168.19.199 ssl_insecure=1 login='administrator@vsphere.local' passwd='Qwer!234' delay=10 -----> Create Fencing
+pcs resource create Web_fs Filesystem device="/dev/httpvg/httplv" directory="/var/www/html" fstype="xfs" -----> Create resource 
+pcs resource create VirtualIP IPaddr2 ip=192.168.19.250 -----> Create resource
+pcs resource create Web_Script lsb:customhttpd ----> Create resource 
+pcs resource group add Web_grp Web_fs VirtualIP Web_Script ------> create resource group and Add resource in group.
+pcs resource group remove Web_grp  ----> Remove Group (Resource will be exist) 
+============================================================================================================================================================================================================================
+
